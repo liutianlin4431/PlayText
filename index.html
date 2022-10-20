@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+
+<body>
+	<div class="area">
+		<div id="playText" class="text"></div>
+		<div>
+			<button onclick="playEvent()">播放</button>
+			<button onclick="suspendEvent()">暂停</button>
+			<button onclick="before()">上一个</button>
+			<button onclick="after()">下一个</button>
+		</div>
+	</div>
+</body>
+<script>
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	let text = `
+	你 好呀小孙
+	老师
+		`;
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+	//-----------------------------------
+
+	text = text.replaceAll('\n', '')
+	text = text.replaceAll('\r', '')
+	text = text.replaceAll('\t', '')
+	text = text.replaceAll(' ', '')
+	let textArray = text.split("");
+	console.log(textArray);
+	// textArray = textArray.find(text => text != '');
+	let showIndex = 0;
+	//默认为第一个字
+	document.getElementById("playText").innerHTML = textArray[0];
+	showIndex++;
+	let playText = playAction();
+
+
+	function playEvent() {
+		if (playText == null) {
+			playText = playAction();
+		}
+	};
+
+	function playAction() {
+		return setInterval(function () {
+			document.getElementById("playText").innerHTML = textArray[showIndex];
+			showIndex++;
+			if (showIndex == textArray.length) {
+				showIndex = 0;
+			}
+		}, 5000);
+	}
+
+	function suspendEvent() {
+		clearTimeout(playText)
+		playText = null;
+	}
+
+	function before() {
+		suspendEvent();
+		if (showIndex > 0) {
+			showIndex--;
+			document.getElementById("playText").innerHTML = textArray[showIndex];
+		}
+	}
+
+	function after() {
+		suspendEvent();
+		if (showIndex < textArray.length - 1) {
+			showIndex++;
+			document.getElementById("playText").innerHTML = textArray[showIndex];
+		}
+	};
+</script>
+<style>
+	* {
+		margin: 0;
+		padding: 0;
+	}
+
+	html,
+	body {
+		height: 100%;
+	}
+
+	.area {
+		background-color: red;
+		width: 100%;
+		height: 100%;
+		text-align: center;
+
+	}
+
+	.text {
+		font-size: 500px;
+		height: calc(100% - 30px);
+	}
+</style>
+
+</html>
