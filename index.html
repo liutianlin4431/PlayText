@@ -1,118 +1,163 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-	<meta charset="utf-8">
-	<title></title>
-</head>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
 
-<body>
-	<div class="area">
-		<div id="playText" class="text"></div>
-		<div>
-			<button onclick="playEvent()">播放</button>
-			<button onclick="suspendEvent()">暂停</button>
-			<button onclick="before()">上一个</button>
-			<button onclick="after()">下一个</button>
+	<body>
+		<div class="area">
+			<div>
+				<button onclick="playEvent()">播放</button>
+				<button onclick="suspendEvent()">暂停</button>
+				<button onclick="before()">上一个</button>
+				<button onclick="after()">下一个</button>
+				<button onclick="setText()">设置</button>
+				<button onclick="readingAloud()">朗读</button>
+			</div>
+			<div id="setWin" class="set">
+				<table>
+					<tr>
+						<td>播放文字：</td>
+						<td> <textarea id="text"></textarea>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2"> <button onclick="saveSet()">保存</button></td>
+					</tr>
+				</table>
+			</div>
+			<div id="playText" class="text"></div>
 		</div>
-	</div>
-</body>
-<script>
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	let text = `
-	你 好呀小孙
-	老师
-		`;
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
-	//-----------------------------------
+	</body>
+	<script src="js/jquery-3.6.1.min.js"></script>
+	<script src="js/jquery.cookie-1.4.1.min.js"></script>
+	<script>
+		var speaker = new window.SpeechSynthesisUtterance();
+		var speakTimer,
+			stopTimer;
 
-	text = text.replaceAll('\n', '')
-	text = text.replaceAll('\r', '')
-	text = text.replaceAll('\t', '')
-	text = text.replaceAll(' ', '')
-	let textArray = text.split("");
-	console.log(textArray);
-	// textArray = textArray.find(text => text != '');
-	let showIndex = 0;
-	//默认为第一个字
-	document.getElementById("playText").innerHTML = textArray[0];
-	showIndex++;
-	let playText = playAction();
-
-
-	function playEvent() {
-		if (playText == null) {
-			playText = playAction();
+		$(function() {
+			let textSize = $("#playText").height() - $("#playText").height() * 0.25;
+			$("#playText").css('font-size', textSize + 'px');
+		});
+		let text = $.cookie('text');
+		if (text == undefined) {
+			text = "未设置文字";
 		}
-	};
+		text = text.replace(/\n/g, '');
+		text = text.replace(/\r/g, '');
+		text = text.replace(/\t/g, '');
+		text = text.replace(/ /g, '');
+		text = text.replace(/，|,|。|\.|？|\?|！|!/g, '');
+		let textArray = text.split("");
+		console.log(textArray)
+		// textArray = textArray.find(text => text != '');
+		let showIndex = 0;
+		let nextIndex = 0;
+		//默认为第一个字
+		document.getElementById("playText").innerHTML = textArray[0];
+		if (textArray.length > 1)
+			nextIndex++;
+		let playText = playAction();
 
-	function playAction() {
-		return setInterval(function () {
-			document.getElementById("playText").innerHTML = textArray[showIndex];
-			showIndex++;
-			if (showIndex == textArray.length) {
-				showIndex = 0;
+		function playEvent() {
+			if (playText == null) {
+				playText = playAction();
 			}
-		}, 5000);
-	}
+		};
 
-	function suspendEvent() {
-		clearTimeout(playText)
-		playText = null;
-	}
-
-	function before() {
-		suspendEvent();
-		if (showIndex > 0) {
-			showIndex--;
-			document.getElementById("playText").innerHTML = textArray[showIndex];
+		function playAction() {
+			return setInterval(function() {
+				showIndex = nextIndex;
+				document.getElementById("playText").innerHTML = textArray[showIndex];
+				nextIndex++;
+				if (nextIndex == textArray.length) {
+					nextIndex = 0;
+				}
+			}, 5000);
 		}
-	}
 
-	function after() {
-		suspendEvent();
-		if (showIndex < textArray.length - 1) {
-			showIndex++;
-			document.getElementById("playText").innerHTML = textArray[showIndex];
+		function suspendEvent() {
+			clearTimeout(playText)
+			playText = null;
 		}
-	};
-</script>
-<style>
-	* {
-		margin: 0;
-		padding: 0;
-	}
 
-	html,
-	body {
-		height: 100%;
-	}
+		function before() {
+			suspendEvent();
+			if (showIndex > 0) {
+				showIndex--;
+				document.getElementById("playText").innerHTML = textArray[showIndex];
+			}
+		}
 
-	.area {
-		background-color: red;
-		width: 100%;
-		height: 100%;
-		text-align: center;
+		function after() {
+			suspendEvent();
+			if (showIndex < textArray.length - 1) {
+				showIndex++;
+				document.getElementById("playText").innerHTML = textArray[showIndex];
+			}
+		};
 
-	}
+		function readingAloud() {
+			suspendEvent();
+			speaker.text = textArray[showIndex];
+			window.speechSynthesis.speak(speaker);
+		}
 
-	.text {
-		font-size: 500px;
-		height: calc(100% - 30px);
-	}
-</style>
+		function setText() {
+			$("#setWin").css('display', 'grid');
+			let text = $.cookie('text');
+			if (text == undefined) {
+				$('#text').val("未设置文字");
+			} else
+				$('#text').val(text);
+		}
+
+		function saveSet() {
+			let text = $('#text').val();
+			$.cookie('text', text, {
+				expires: 365
+			});
+			location.reload();
+		}
+	</script>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		html,
+		body {
+			height: 100%;
+		}
+
+		.area {
+			width: 100%;
+			height: 100%;
+			text-align: center;
+
+		}
+
+		.text {
+			height: calc(100% - 30px);
+		}
+
+		.set {
+			position: absolute;
+			display: none;
+		}
+
+		textarea {
+			width: 200px;
+			height: 300px;
+		}
+
+		input {
+			width: 200px;
+		}
+	</style>
 
 </html>
